@@ -8,10 +8,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/notes/[id] - Get a single note
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const {id} = await params;
     
     const note = await fetchNote(id);
     
@@ -27,11 +27,13 @@ export async function GET(
     
     return NextResponse.json(transformedNote);
   } catch (error) {
-    console.error(`Error fetching note ${params.id}:`, error);
+    const {id} = await params;
+
+    console.error(`Error fetching note ${id}:`, error);
     
     if ((error as Error).message.includes('not found')) {
       return NextResponse.json(
-        { error: `Note with ID ${params.id} not found` },
+        { error: `Note with ID ${id} not found` },
         { status: 404 }
       );
     }
@@ -46,10 +48,10 @@ export async function GET(
 // PATCH /api/notes/[id] - Update a note
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const {id} = await params;
     const body = await request.json();
     
     // Check if there are any fields to update
@@ -80,11 +82,13 @@ export async function PATCH(
     
     return NextResponse.json(transformedNote);
   } catch (error) {
-    console.error(`Error updating note ${params.id}:`, error);
+    const {id} = await params;
+
+    console.error(`Error updating note ${id}:`, error);
     
     if ((error as Error).message.includes('not found')) {
       return NextResponse.json(
-        { error: `Note with ID ${params.id} not found` },
+        { error: `Note with ID ${id} not found` },
         { status: 404 }
       );
     }
@@ -99,20 +103,22 @@ export async function PATCH(
 // DELETE /api/notes/[id] - Delete a note
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const {id} = await params;
     
     await deleteNoteRest(id);
     
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error(`Error deleting note ${params.id}:`, error);
+    const {id} = await params;
+
+    console.error(`Error deleting note ${id}:`, error);
     
     if ((error as Error).message.includes('not found')) {
       return NextResponse.json(
-        { error: `Note with ID ${params.id} not found` },
+        { error: `Note with ID ${id} not found` },
         { status: 404 }
       );
     }
