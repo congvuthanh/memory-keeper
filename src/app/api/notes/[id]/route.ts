@@ -1,8 +1,8 @@
 import {
-    deleteNoteRest,
-    fetchNote,
-    updateNoteRest
-} from '@/lib/supabase-rest';
+  deleteNoteRest,
+  fetchNote,
+  updateNoteRest
+} from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/notes/[id] - Get a single note
