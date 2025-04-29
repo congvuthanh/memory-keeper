@@ -1,12 +1,27 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import SignInModal from "./components/SignInModal";
 
 export default function Home() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleGetStarted = () => {
-    router.push("/notes");
+    // If user is authenticated, redirect to notes page
+    if (session) {
+      router.push("/notes");
+    } else {
+      // If not authenticated, open the sign-in modal
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -78,6 +93,12 @@ export default function Home() {
           </p>
         </section>
       </div>
+
+      <SignInModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        callbackUrl="/notes"
+      />
     </div>
   );
 }
