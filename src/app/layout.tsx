@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import AuthProvider from "./components/AuthProvider";
+import { SessionStatus } from "./components/SessionStatus";
 import SignInButton from "./components/SignInButton";
 import "./globals.css";
 
@@ -40,16 +41,18 @@ export default function RootLayout({
                       Memory Keeper
                     </Link>
                   </div>
-                  <div className="ml-6 flex items-center space-x-4">
-                    <Link
-                      href="/notes"
-                      className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      aria-label="Notes"
-                      tabIndex={0}
-                    >
-                      Notes
-                    </Link>
-                  </div>
+                  <SessionStatus>
+                    <div className="ml-6 flex items-center space-x-4">
+                      <Link
+                        href="/notes"
+                        className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                        aria-label="Notes"
+                        tabIndex={0}
+                      >
+                        Notes
+                      </Link>
+                    </div>
+                  </SessionStatus>
                 </div>
 
                 <div className="flex items-center">
