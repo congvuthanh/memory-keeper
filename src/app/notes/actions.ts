@@ -1,41 +1,38 @@
-"use server";
+"use client";
 
-import { supabase } from "@/lib/supabase";
-import { v4 as uuidv4 } from "uuid";
 import type { Note } from "./page";
 
-// Define the database note structure 
-type DbNote = {
+// Define API response note structure
+type ApiNote = {
   id: string;
   title: string;
   content: string;
   color: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 /**
  * Get all notes
  */
 export async function getNotes(): Promise<Note[]> {
-  const { data, error } = await supabase
-    .from('notes')
-    .select('*')
-    .order('updated_at', { ascending: false });
+  const response = await fetch(`/api/notes`, {
+    method: 'GET',
+    cache: 'no-store'
+  });
   
-  if (error) {
-    console.error('Error fetching notes:', error);
+  if (!response.ok) {
+    console.error('Error fetching notes:', response.statusText);
     throw new Error('Failed to fetch notes');
   }
   
-  // Transform database column names to camelCase for frontend
-  return data.map((note: DbNote) => ({
-    id: note.id,
-    title: note.title,
-    content: note.content,
-    color: note.color,
-    createdAt: new Date(note.created_at),
-    updatedAt: new Date(note.updated_at),
+  const data = await response.json();
+  
+  // API already returns in camelCase format, but the dates are strings so we convert them
+  return data.map((note: ApiNote) => ({
+    ...note,
+    createdAt: new Date(note.createdAt),
+    updatedAt: new Date(note.updatedAt),
   }));
 }
 
@@ -43,24 +40,22 @@ export async function getNotes(): Promise<Note[]> {
  * Get a single note by ID
  */
 export async function getNote(id: string): Promise<Note> {
-  const { data, error } = await supabase
-    .from('notes')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const response = await fetch(`/api/notes/${id}`, {
+    method: 'GET',
+    cache: 'no-store'
+  });
   
-  if (error) {
-    console.error(`Error fetching note with ID ${id}:`, error);
+  if (!response.ok) {
+    console.error(`Error fetching note with ID ${id}:`, response.statusText);
     throw new Error(`Note with ID ${id} not found`);
   }
   
+  const data = await response.json();
+  
   return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    color: data.color,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
+    ...data,
+    createdAt: new Date(data.createdAt),
+    updatedAt: new Date(data.updatedAt),
   };
 }
 
@@ -70,36 +65,29 @@ export async function getNote(id: string): Promise<Note> {
 export async function createNote(
   noteData: Omit<Note, "id" | "createdAt" | "updatedAt">
 ): Promise<Note> {
-  const now = new Date();
-  const id = uuidv4();
+  const response = await fetch(`/api/notes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      title: noteData.title,
+      content: noteData.content,
+      color: noteData.color
+    })
+  });
   
-  const { data, error } = await supabase
-    .from('notes')
-    .insert([
-      {
-        id,
-        title: noteData.title,
-        content: noteData.content,
-        color: noteData.color,
-        created_at: now.toISOString(),
-        updated_at: now.toISOString(),
-      }
-    ])
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error creating note:', error);
+  if (!response.ok) {
+    console.error('Error creating note:', response.statusText);
     throw new Error('Failed to create note');
   }
   
+  const data = await response.json();
+  
   return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    color: data.color,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
+    ...data,
+    createdAt: new Date(data.createdAt),
+    updatedAt: new Date(data.updatedAt),
   };
 }
 
@@ -110,36 +98,32 @@ export async function updateNote(
   id: string,
   noteData: Partial<Omit<Note, "id" | "createdAt" | "updatedAt">>
 ): Promise<Note> {
-  const now = new Date();
-  
-  // Prepare the data for Supabase (converting camelCase to snake_case)
-  const updateData: Record<string, unknown> = {
-    updated_at: now.toISOString()
-  };
+  // Prepare the data for the API
+  const updateData: Record<string, unknown> = {};
   
   if (noteData.title !== undefined) updateData.title = noteData.title;
   if (noteData.content !== undefined) updateData.content = noteData.content;
   if (noteData.color !== undefined) updateData.color = noteData.color;
   
-  const { data, error } = await supabase
-    .from('notes')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
+  const response = await fetch(`/api/notes/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updateData)
+  });
   
-  if (error) {
-    console.error(`Error updating note with ID ${id}:`, error);
+  if (!response.ok) {
+    console.error(`Error updating note with ID ${id}:`, response.statusText);
     throw new Error(`Failed to update note with ID ${id}`);
   }
   
+  const data = await response.json();
+  
   return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    color: data.color,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
+    ...data,
+    createdAt: new Date(data.createdAt),
+    updatedAt: new Date(data.updatedAt),
   };
 }
 
@@ -147,13 +131,12 @@ export async function updateNote(
  * Delete a note
  */
 export async function deleteNote(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('notes')
-    .delete()
-    .eq('id', id);
+  const response = await fetch(`/api/notes/${id}`, {
+    method: 'DELETE'
+  });
   
-  if (error) {
-    console.error(`Error deleting note with ID ${id}:`, error);
+  if (!response.ok) {
+    console.error(`Error deleting note with ID ${id}:`, response.statusText);
     throw new Error(`Failed to delete note with ID ${id}`);
   }
 } 
