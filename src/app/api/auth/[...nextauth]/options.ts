@@ -1,3 +1,4 @@
+import { addUserToDatabase, UserDetails } from "@/lib/supabase";
 import type { Session } from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import type { JWT } from "next-auth/jwt";
@@ -26,6 +27,27 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async redirect({ baseUrl }: { baseUrl: string }) {
       return baseUrl;
+    },
+    async jwt({ token, account, profile }) {
+      // If this is a sign-in, add the user to the database
+      if (account && profile) {
+        if (token.sub && token.email) {
+          try {
+            const userDetails: UserDetails = {
+              id: token.sub,
+              email: token.email,
+              name: token.name || null,
+              image: token.picture || null,
+              provider: account.provider || "google",
+            };
+            
+            await addUserToDatabase(userDetails);
+          } catch (error) {
+            console.error("Error adding user to Supabase:", error);
+          }
+        }
+      }
+      return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
