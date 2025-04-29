@@ -20,6 +20,19 @@ const COLORS = [
   { name: "pink", value: "pink", hex: "#EC4899" },
 ];
 
+// Color border and ring class mappings
+const COLOR_CLASSES = {
+  gray: { border: "border-gray-600", ring: "ring-gray-400" },
+  red: { border: "border-red-600", ring: "ring-red-400" },
+  orange: { border: "border-orange-600", ring: "ring-orange-400" },
+  yellow: { border: "border-yellow-600", ring: "ring-yellow-400" },
+  green: { border: "border-green-600", ring: "ring-green-400" },
+  blue: { border: "border-blue-600", ring: "ring-blue-400" },
+  indigo: { border: "border-indigo-600", ring: "ring-indigo-400" },
+  purple: { border: "border-purple-600", ring: "ring-purple-400" },
+  pink: { border: "border-pink-600", ring: "ring-pink-400" },
+};
+
 const CreateNoteModal = ({ onClose, onCreate }: CreateNoteModalProps) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -132,8 +145,8 @@ const CreateNoteModal = ({ onClose, onCreate }: CreateNoteModalProps) => {
                   type="button"
                   onClick={() => setColor(colorOption.value)}
                   className={`w-8 h-8 rounded-full border-2 ${color === colorOption.value
-                    ? `border-${colorOption.value}-600 ring-2 ring-${colorOption.value}-400`
-                    : "border-transparent"
+                      ? `${COLOR_CLASSES[colorOption.value as keyof typeof COLOR_CLASSES].border} ring-2 ${COLOR_CLASSES[colorOption.value as keyof typeof COLOR_CLASSES].ring}`
+                      : "border-transparent"
                     }`}
                   style={{ backgroundColor: colorOption.hex }}
                   aria-label={`Select ${colorOption.name} color`}

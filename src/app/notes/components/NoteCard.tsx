@@ -52,10 +52,22 @@ const NoteCard = ({ note, onDelete, onEdit }: NoteCardProps) => {
       : content;
   };
 
+  // Define color border classes mapping
+  const colorBorderClasses = {
+    gray: "border-gray-500",
+    red: "border-red-500",
+    orange: "border-orange-500",
+    yellow: "border-yellow-500",
+    green: "border-green-500",
+    blue: "border-blue-500",
+    indigo: "border-indigo-500",
+    purple: "border-purple-500",
+    pink: "border-pink-500"
+  };
+
   return (
     <div
-      className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg cursor-pointer ${note.color ? `border-l-4 border-${note.color}-500` : ''
-        }`}
+      className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg cursor-pointer ${note.color ? `border-l-4 ${colorBorderClasses[note.color as keyof typeof colorBorderClasses]}` : ''}`}
       style={{ opacity: isDeleting ? 0.6 : 1 }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
